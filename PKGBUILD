@@ -31,7 +31,7 @@ optdepends=('cinnamon-translations: i18n'
 conflicts=('nemo')
 provides=('nemo')
 options=('!emptydirs')
-source=("git+$url.git")
+source=("mycoolname::git+$url#branch=personal")
 sha256sums=('SKIP')
 
 pkgver() {
