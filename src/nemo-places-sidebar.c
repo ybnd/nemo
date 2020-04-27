@@ -378,7 +378,7 @@ check_heading_for_devices (NemoPlacesSidebar *sidebar,
     if (section_type == SECTION_DEVICES) {
         if (!sidebar->devices_header_added) {
             cat_iter = add_heading (sidebar, SECTION_DEVICES,
-                        _("Devices"));
+                        _("devices"));
             sidebar->devices_header_added = TRUE;
         }
     }
@@ -744,7 +744,7 @@ update_places (NemoPlacesSidebar *sidebar)
 	volume_monitor = sidebar->volume_monitor;
 
     cat_iter = add_heading (sidebar, SECTION_COMPUTER,
-                                    _("My Computer"));
+                                    _("places"));
     /* add built in bookmarks */
 
     /* home folder */
@@ -759,7 +759,7 @@ update_places (NemoPlacesSidebar *sidebar)
     g_free (tooltip_info);
     cat_iter = add_place (sidebar, PLACES_BUILT_IN,
                            SECTION_COMPUTER,
-                           _("Home"), icon,
+                           _("home"), icon,
                            mount_uri, NULL, NULL, NULL, 0,
                            tooltip,
                            full, home_on_different_fs (mount_uri) && full > -1,
@@ -776,7 +776,7 @@ update_places (NemoPlacesSidebar *sidebar)
         icon = get_icon_name (mount_uri);
         cat_iter = add_place (sidebar, PLACES_BUILT_IN,
                                SECTION_COMPUTER,
-                               _("Desktop"), icon,
+                               _("desktop"), icon,
                                mount_uri, NULL, NULL, NULL, 0,
                                _("Open the contents of your desktop in a folder"), 0, FALSE,
                                cat_iter);
@@ -828,7 +828,7 @@ update_places (NemoPlacesSidebar *sidebar)
         icon = NEMO_ICON_SYMBOLIC_FOLDER_RECENT;
         cat_iter = add_place (sidebar, PLACES_BUILT_IN,
                               SECTION_COMPUTER,
-                              _("Recent"), icon, mount_uri,
+                              _("recent"), icon, mount_uri,
                               NULL, NULL, NULL, 0,
                               _("Recent files"), 0, FALSE, cat_iter);
         sidebar->bottom_bookend_uri = g_strdup (mount_uri);
@@ -846,7 +846,7 @@ update_places (NemoPlacesSidebar *sidebar)
     g_free (tooltip_info);
     cat_iter = add_place (sidebar, PLACES_BUILT_IN,
                            SECTION_COMPUTER,
-                           _("File System"), icon,
+                           _("root"), icon,
                            mount_uri, NULL, NULL, NULL, 0,
                            tooltip,
                            full, full > -1,
@@ -860,14 +860,14 @@ update_places (NemoPlacesSidebar *sidebar)
     icon = nemo_trash_monitor_get_symbolic_icon_name ();
     cat_iter = add_place (sidebar, PLACES_BUILT_IN,
                            SECTION_COMPUTER,
-                           _("Trash"), icon, mount_uri,
+                           _("trash"), icon, mount_uri,
                            NULL, NULL, NULL, 0,
                            _("Open the trash"), 0, FALSE,
                            cat_iter);
     g_free (icon);
 
     cat_iter = add_heading (sidebar, SECTION_BOOKMARKS,
-                                    _("Bookmarks"));
+                                    _("bookmarks"));
 
     while (bookmark_index < bookmark_count) {
         bookmark = nemo_bookmark_list_item_at (sidebar->bookmarks, bookmark_index);
@@ -1132,7 +1132,7 @@ update_places (NemoPlacesSidebar *sidebar)
 
 	/* network */
 	cat_iter = add_heading (sidebar, SECTION_NETWORK,
-		     _("Network"));
+		     _("network"));
 
 	network_volumes = g_list_reverse (network_volumes);
 	for (l = network_volumes; l != NULL; l = l->next) {
@@ -1187,7 +1187,7 @@ update_places (NemoPlacesSidebar *sidebar)
 	icon = NEMO_ICON_SYMBOLIC_NETWORK;
 	cat_iter = add_place (sidebar, PLACES_BUILT_IN,
                 		   SECTION_NETWORK,
-                		   _("Network"), icon,
+                		   _("network"), icon,
                 		   mount_uri, NULL, NULL, NULL, 0,
                 		   _("Browse the contents of the network"), 0, FALSE,
                            cat_iter);
