@@ -3532,7 +3532,7 @@ get_target_file_with_custom_name (GFile *src,
 
 			/* if file is being restored from trash make sure it uses its original name */
 			if (g_file_has_uri_scheme (src, "trash")) {
-				copyname = g_strdup (g_file_info_get_attribute_byte_string (info, G_FILE_ATTRIBUTE_TRASH_ORIG_PATH));
+				copyname = g_path_get_basename (g_file_info_get_attribute_byte_string (info, G_FILE_ATTRIBUTE_TRASH_ORIG_PATH));
 			}
 
 			if (copyname == NULL) {
@@ -3895,7 +3895,7 @@ copy_move_directory (CopyMoveJob *copy_job,
 
 	if (create_dest) {
 		flags = (readonly_source_fs) ? G_FILE_COPY_NOFOLLOW_SYMLINKS | G_FILE_COPY_TARGET_DEFAULT_PERMS
-					     : G_FILE_COPY_NOFOLLOW_SYMLINKS;
+					     : G_FILE_COPY_NOFOLLOW_SYMLINKS | G_FILE_COPY_ALL_METADATA;
 		/* Ignore errors here. Failure to copy metadata is not a hard error */
 		g_file_copy_attributes (src, *dest,
 					flags,
@@ -4464,6 +4464,13 @@ copy_move_file (CopyMoveJob *copy_job,
 	}
 
 	if (res) {
+		if (!copy_job->is_move) {
+			/* Ignore errors here. Failure to copy metadata is not a hard error */
+			g_file_copy_attributes (src, dest,
+			                        flags | G_FILE_COPY_ALL_METADATA,
+			                        job->cancellable, NULL);
+		}
+
 		transfer_info->num_files ++;
 		report_copy_progress (copy_job, source_info, transfer_info);
 

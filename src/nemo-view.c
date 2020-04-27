@@ -2804,6 +2804,9 @@ nemo_view_init (NemoView *view)
 	g_signal_connect_swapped (nemo_preferences,
 				  "changed::" NEMO_PREFERENCES_ENABLE_DELETE,
 				  G_CALLBACK (schedule_update_menus_callback), view);
+    g_signal_connect_swapped (nemo_menu_config_preferences,
+                              "changed",
+                              G_CALLBACK (schedule_update_menus_callback), view);
     g_signal_connect_swapped (nemo_preferences,
                   "changed::" NEMO_PREFERENCES_SWAP_TRASH_DELETE,
                   G_CALLBACK (swap_delete_keybinding_changed_callback), view);
@@ -2834,10 +2837,6 @@ nemo_view_init (NemoView *view)
                   G_CALLBACK (nemo_to_menu_preferences_changed_callback), view);
 
     nemo_to_menu_preferences_changed_callback (view);
-
-    g_signal_connect_swapped (nemo_preferences,
-                              "changed::" NEMO_PREFERENCES_CONTEXT_MENUS_SHOW_ALL_ACTIONS,
-                              G_CALLBACK (schedule_update_menus), view);
 
 	manager = nemo_file_undo_manager_get ();
 	g_signal_connect_object (manager, "undo-changed",
@@ -3019,6 +3018,8 @@ nemo_view_finalize (GObject *object)
 					      sort_directories_first_changed_callback, view);
 	g_signal_handlers_disconnect_by_func (nemo_window_state,
 					      nemo_view_display_selection_info, view);
+    g_signal_handlers_disconnect_by_func (nemo_menu_config_preferences,
+                          schedule_update_menus_callback, view);
 
 	g_signal_handlers_disconnect_by_func (gnome_lockdown_preferences,
 					      schedule_update_menus, view);
@@ -4865,11 +4866,11 @@ add_x_content_apps (NemoView *view, NemoFile *file, GList **applications)
 }
 
 static void
-reset_open_with_menu (NemoView *view, GList *selection)
+reset_open_with_menu (NemoView *view, GList *selection, gboolean filter_default)
 {
 	GList *applications, *node;
 	NemoFile *file;
-	gboolean submenu_visible, filter_default;
+	gboolean submenu_visible;
 	int num_applications;
 	int index;
 	gboolean other_applications_visible;
@@ -4891,7 +4892,6 @@ reset_open_with_menu (NemoView *view, GList *selection)
 				      &view->details->open_with_action_group);
 
 	other_applications_visible = (selection != NULL);
-	filter_default = (selection != NULL);
 
 	for (node = selection; node != NULL; node = node->next) {
 
@@ -4902,7 +4902,7 @@ reset_open_with_menu (NemoView *view, GList *selection)
 	}
 
 	default_app = NULL;
-	if (filter_default) {
+	if (filter_default && selection != NULL) {
 		default_app = nemo_mime_get_default_application_for_files (selection);
 	}
 
@@ -8544,11 +8544,11 @@ static const GtkActionEntry directory_view_entries[] = {
 				N_("Move the current selection to the desktop"),
 				G_CALLBACK (action_move_to_desktop_callback) },
                                {NEMO_ACTION_BROWSE_MOVE_TO, "document-open-symbolic",
-                N_("Browse…"), NULL,
+                N_("Browse..."), NULL,
                 N_("Browse for a folder to move the selection to"),
                 G_CALLBACK (action_browse_for_move_to_folder_callback) },
                                {NEMO_ACTION_BROWSE_COPY_TO, "document-open-symbolic",
-                N_("Browse…"), NULL,
+                N_("Browse..."), NULL,
                 N_("Browse for a folder to copy the selection to"),
                 G_CALLBACK (action_browse_for_copy_to_folder_callback) },
                                {NEMO_ACTION_PIN_FILE, "view-pin-symbolic",
@@ -9611,31 +9611,38 @@ has_writable_extra_pane (NemoView *view)
 	return FALSE;
 }
 
-const gchar *complex_item_paths[] = {
-                                     "/selection/File Clipboard Actions/Duplicate",
-                                     "/selection/File Actions/Create Link",
-                                     "/selection/File Actions/CopyToMenu",
-                                     "/selection/File Actions/MoveToMenu",
-                                    };
-
 static void
-update_complex_popup_items (NemoView *view)
+update_configurable_context_menu_items (NemoView *view)
 {
+    GtkUIManager *ui_manager;
     GtkWidget *item;
     GtkAction *action;
-    guint i;
+    gint i;
 
-    gboolean complex_mode = g_settings_get_boolean (nemo_preferences, NEMO_PREFERENCES_CONTEXT_MENUS_SHOW_ALL_ACTIONS);
+    ui_manager = nemo_window_get_ui_manager (view->details->window);
 
-    for (i = 0; i < G_N_ELEMENTS (complex_item_paths); i++) {
-        item = gtk_ui_manager_get_widget (nemo_window_get_ui_manager (view->details->window),
-                                          complex_item_paths[i]);
+    for (i = 0; i < CONFIGURABLE_MENU_ITEM_COUNT; i++) {
+        if (!CONFIGURABLE_MENU_ITEM_INFO[i].action_name) {
+            continue;
+        }
 
-        action = gtk_ui_manager_get_action (nemo_window_get_ui_manager (view->details->window),
-                                          complex_item_paths[i]);
+        item = gtk_ui_manager_get_widget (ui_manager,
+                                          CONFIGURABLE_MENU_ITEM_INFO[i].ui_path);
 
-        if (item != NULL)
-            gtk_widget_set_visible (item, complex_mode && gtk_action_get_visible (action));
+        action = gtk_ui_manager_get_action (ui_manager,
+                                            CONFIGURABLE_MENU_ITEM_INFO[i].ui_path);
+
+        if (!item || !action) {
+            DEBUG ("Configurable menu item widget or action not found (name: %s, path: %s)",
+                         CONFIGURABLE_MENU_ITEM_INFO[i].action_name,
+                         CONFIGURABLE_MENU_ITEM_INFO[i].ui_path);
+            continue;
+        }
+
+        gboolean pref_visible = g_settings_get_boolean (nemo_menu_config_preferences,
+                                                        CONFIGURABLE_MENU_ITEM_INFO[i].settings_key);
+
+        gtk_widget_set_visible (item, gtk_action_get_visible (action) && pref_visible);
     }
 }
 
@@ -9836,7 +9843,7 @@ real_update_menus (NemoView *view)
 	g_free (label_with_underscore);
 
 	/* Broken into its own function just for convenience */
-	reset_open_with_menu (view, selection);
+	reset_open_with_menu (view, selection, show_app);
 	reset_extension_actions_menu (view, selection);
     reset_move_copy_to_menu (view);
 
@@ -10068,7 +10075,7 @@ real_update_menus (NemoView *view)
 
     gtk_action_set_visible (action, !is_desktop_view && first_selected_is_pinned);
 
-    update_complex_popup_items (view);
+    update_configurable_context_menu_items (view);
 
     nemo_file_list_unref (selection);
 }

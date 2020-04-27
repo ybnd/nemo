@@ -131,8 +131,6 @@ typedef enum
 
 #define NEMO_PREFERENCES_SIDEBAR_BOOKMARK_BREAKPOINT "sidebar-bookmark-breakpoint"
 
-#define NEMO_PREFERENCES_CONTEXT_MENUS_SHOW_ALL_ACTIONS	"context-menus-show-all-actions"
-
 enum
 {
 	NEMO_DEFAULT_FOLDER_VIEWER_ICON_VIEW,
@@ -278,27 +276,28 @@ gint nemo_global_preferences_get_tooltip_flags (void);
 gboolean nemo_global_preferences_should_load_plugin (const gchar *name, const gchar *key);
 gchar **nemo_global_preferences_get_fileroller_mimetypes (void);
 
-GSettings *nemo_preferences;
-GSettings *nemo_icon_view_preferences;
-GSettings *nemo_list_view_preferences;
-GSettings *nemo_compact_view_preferences;
-GSettings *nemo_desktop_preferences;
-GSettings *nemo_tree_sidebar_preferences;
-GSettings *nemo_window_state;
-GSettings *nemo_plugin_preferences;
-GSettings *gnome_lockdown_preferences;
-GSettings *gnome_background_preferences;
-GSettings *gnome_media_handling_preferences;
-GSettings *gnome_terminal_preferences;
-GSettings *cinnamon_privacy_preferences;
-GSettings *cinnamon_interface_preferences;
+extern GSettings *nemo_preferences;
+extern GSettings *nemo_icon_view_preferences;
+extern GSettings *nemo_list_view_preferences;
+extern GSettings *nemo_compact_view_preferences;
+extern GSettings *nemo_desktop_preferences;
+extern GSettings *nemo_tree_sidebar_preferences;
+extern GSettings *nemo_window_state;
+extern GSettings *nemo_plugin_preferences;
+extern GSettings *nemo_menu_config_preferences;
+extern GSettings *gnome_lockdown_preferences;
+extern GSettings *gnome_background_preferences;
+extern GSettings *gnome_media_handling_preferences;
+extern GSettings *gnome_terminal_preferences;
+extern GSettings *cinnamon_privacy_preferences;
+extern GSettings *cinnamon_interface_preferences;
 
 /* Cached for fast access and used in nemo-file.c for constructing date/time strings */
-GTimeZone      *prefs_current_timezone;
-gboolean        prefs_current_24h_time_format;
-NemoDateFormat  prefs_current_date_format;
+extern GTimeZone      *prefs_current_timezone;
+extern gboolean        prefs_current_24h_time_format;
+extern NemoDateFormat  prefs_current_date_format;
 
-GTimer    *nemo_startup_timer;
+extern GTimer    *nemo_startup_timer;
 
 G_END_DECLS
 

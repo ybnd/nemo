@@ -36,6 +36,27 @@
 #include <glib/gi18n.h>
 #include <gio/gdesktopappinfo.h>
 
+GSettings *nemo_preferences;
+GSettings *nemo_icon_view_preferences;
+GSettings *nemo_list_view_preferences;
+GSettings *nemo_compact_view_preferences;
+GSettings *nemo_desktop_preferences;
+GSettings *nemo_tree_sidebar_preferences;
+GSettings *nemo_window_state;
+GSettings *nemo_plugin_preferences;
+GSettings *nemo_menu_config_preferences;
+GSettings *gnome_lockdown_preferences;
+GSettings *gnome_background_preferences;
+GSettings *gnome_media_handling_preferences;
+GSettings *gnome_terminal_preferences;
+GSettings *cinnamon_privacy_preferences;
+GSettings *cinnamon_interface_preferences;
+
+GTimeZone      *prefs_current_timezone;
+gboolean        prefs_current_24h_time_format;
+NemoDateFormat  prefs_current_date_format;
+
+GTimer    *nemo_startup_timer;
 
 static gboolean ignore_view_metadata = FALSE;
 static gboolean inherit_folder_view_preference = FALSE;
@@ -299,6 +320,7 @@ nemo_global_preferences_init (void)
 	nemo_desktop_preferences = g_settings_new("org.nemo.desktop");
 	nemo_tree_sidebar_preferences = g_settings_new("org.nemo.sidebar-panels.tree");
     nemo_plugin_preferences = g_settings_new("org.nemo.plugins");
+    nemo_menu_config_preferences = g_settings_new("org.nemo.preferences.menu-config");
 	gnome_lockdown_preferences = g_settings_new("org.cinnamon.desktop.lockdown");
 	gnome_background_preferences = g_settings_new("org.cinnamon.desktop.background");
 	gnome_media_handling_preferences = g_settings_new("org.cinnamon.desktop.media-handling");
@@ -326,6 +348,7 @@ nemo_global_preferences_finalize (void)
     g_object_unref (nemo_desktop_preferences);
     g_object_unref (nemo_tree_sidebar_preferences);
     g_object_unref (nemo_plugin_preferences);
+    g_object_unref (nemo_menu_config_preferences);
     g_object_unref (gnome_lockdown_preferences);
     g_object_unref (gnome_background_preferences);
     g_object_unref (gnome_media_handling_preferences);

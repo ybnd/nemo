@@ -1,7 +1,7 @@
 # Meson build file
 
 # https://github.com/linuxmint/nemo
-project('nemo', 'c', version: '4.2.2',
+project('nemo', 'c', version: '4.4.2',
   meson_version: '>=0.41.0'
 )
 
@@ -51,6 +51,7 @@ if not get_option('deprecated_warnings')
       '-Wno-deprecated-declarations',
       '-Wno-deprecated',
       '-Wno-declaration-after-statement',
+      '-DGLIB_DISABLE_DEPRECATION_WARNINGS',
     ],
     language: 'c',
   )
@@ -85,24 +86,6 @@ xapp    = dependency('xapp',                        version: '>=1.4.0')
 
 # Facultative dependencies
 
-trackerChoice = get_option('tracker')
-tracker_enabled = false
-if trackerChoice != 'false'
-  trackerRequired = (trackerChoice == 'true')
-  # Check all the possible versions
-    tracker_sparql = dependency('tracker-sparql-1.0',  required: false)
-  if not tracker_sparql.found()
-    tracker_sparql = dependency('tracker-sparql-0.18', required: false)
-  endif
-  if not tracker_sparql.found()
-    tracker_sparql = dependency('tracker-sparql-0.16', required: trackerRequired)
-  endif
-
-  tracker_enabled = trackerRequired or tracker_sparql.found()
-endif
-conf.set('ENABLE_TRACKER', tracker_enabled)
-
-
 gtkdoc_enabled = get_option('gtk_doc')
 if gtkdoc_enabled
   find_program('gtkdoc-scan', required: true)
@@ -127,6 +110,12 @@ if libselinux_enabled
 endif
 conf.set('HAVE_SELINUX', libselinux_enabled)
 
+new_pango = dependency('pango', version: '>=1.44.0', required: false)
+if new_pango.found()
+  conf.set('HAVE_PANGO_144', true)
+else
+  message('................using pango @0@ instead'.format(new_pango.version()))
+endif
 
 enableEmptyView = get_option('empty_view')
 conf.set10('ENABLE_EMPTY_VIEW', enableEmptyView)
@@ -201,7 +190,6 @@ message('\n'.join(['',
 '    debugging support:  @0@'.format(buildtype),
 '    libexif support:    @0@'.format(libexif_enabled),
 '    exempi  support:    @0@'.format(exempi_enabled),
-'    Tracker support:    @0@'.format(tracker_enabled),
 '',
 '    nemo-extension documentation: @0@'.format(gtkdoc_enabled),
 '    nemo-extension introspection: @0@'.format(true),

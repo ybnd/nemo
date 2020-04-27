@@ -36,6 +36,8 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
+
+
 enum {
   MOVE_CURSOR,
   POPULATE_POPUP,
@@ -996,6 +998,9 @@ eel_editable_label_ensure_layout (EelEditableLabel *label,
       if (label->font_desc != NULL)
 	pango_layout_set_font_description (label->layout, label->font_desc);
       
+#ifdef HAVE_PANGO_144
+      pango_attr_list_insert (tmp_attrs, pango_attr_insert_hyphens_new (FALSE));
+#endif    
       pango_layout_set_attributes (label->layout, tmp_attrs);
       
       if (preedit_string)

@@ -89,6 +89,7 @@ static void use_extra_mouse_buttons_changed          (gpointer              call
 static void side_pane_id_changed                    (NemoWindow            *window);
 static void toggle_menubar                          (NemoWindow            *window,
                                                      gint                   action);
+static void nemo_window_reload                      (NemoWindow            *window);
 
 /* Sanity check: highest mouse button value I could find was 14. 5 is our
  * lower threshold (well-documented to be the one of the button events for the
@@ -731,6 +732,11 @@ nemo_window_constructed (GObject *self)
     if (g_settings_get_boolean (nemo_preferences, NEMO_PREFERENCES_START_WITH_DUAL_PANE) &&
         !window->details->disable_chrome)
         nemo_window_split_view_on (window);
+
+    g_signal_connect_swapped (GTK_WINDOW (window),
+                              "notify::scale-factor",
+                              G_CALLBACK (nemo_window_reload),
+                              window);
 }
 
 static void
@@ -831,6 +837,10 @@ nemo_window_finalize (GObject *object)
 		g_source_remove (window->details->sidebar_width_handler_id);
 		window->details->sidebar_width_handler_id = 0;
 	}
+
+    g_signal_handlers_disconnect_by_func (nemo_preferences,
+                                          nemo_window_sync_thumbnail_action,
+                                          window);
 
     clear_menu_hide_delay (window);
 
