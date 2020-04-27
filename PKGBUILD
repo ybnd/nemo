@@ -6,7 +6,7 @@
 # Contributor: Ner0
 
 pkgname=nemo-ybnd-personal
-pkgver=4.2.1.r9.g0371d6e
+pkgver=4.2.1.r13.g1a016cd
 pkgrel=1
 pkgdesc="Cinnamon file manager, git-version"
 arch=('i686' 'x86_64')
@@ -31,7 +31,7 @@ optdepends=('cinnamon-translations: i18n'
 conflicts=('nemo')
 provides=('nemo')
 options=('!emptydirs')
-source=("mycoolname::git+$url#branch=personal")
+source=("git+$url#branch=personal")
 sha256sums=('SKIP')
 
 pkgver() {
