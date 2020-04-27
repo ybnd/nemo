@@ -63,9 +63,19 @@ nemo_compute_title_for_location (GFile *location)
 	/* TODO-gio: This doesn't really work all that great if the
 	   info about the file isn't known atm... */
 
+	g_warning (location);
+
 	if (nemo_is_home_directory (location)) {
-		return g_strdup (_("Home"));
+		return g_strdup (_("♥"));
 	}
+
+    if (nemo_is_recent_directory (location)) {
+        return g_strdup (_("recent"));
+    }
+
+    if (nemo_is_trash_directory (location)) {
+        return g_strdup (_("trash"));
+    }
 
 	builder = NULL;
 	if (location) {
@@ -721,6 +731,30 @@ nemo_is_home_directory (GFile *dir)
 	}
 
 	return g_file_equal (dir, home_dir);
+}
+
+gboolean
+nemo_is_trash_directory (GFile *dir)
+{
+    static GFile *trash_dir = NULL;
+
+    if (trash_dir == NULL) {
+        trash_dir = g_file_new_for_path ("trash:///");  /* todo: this is quick & dirty and may not work */
+    }
+
+    return g_file_equal (dir, trash_dir);
+}
+
+gboolean
+nemo_is_recent_directory (GFile *dir)
+{
+    static GFile *recent_dir = NULL;
+
+    if (recent_dir == NULL) {
+        recent_dir = g_file_new_for_path ("recent:///");  /* todo: this is quick & dirty and may not work */
+    }
+
+    return g_file_equal (dir, recent_dir);
 }
 
 gboolean

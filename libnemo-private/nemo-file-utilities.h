@@ -48,6 +48,8 @@ gboolean nemo_is_desktop_directory_file          (GFile *dir,
 gboolean nemo_is_root_directory                  (GFile *dir);
 gboolean nemo_is_desktop_directory               (GFile *dir);
 gboolean nemo_is_home_directory                  (GFile *dir);
+gboolean nemo_is_recent_directory                (GFile *dir);
+gboolean nemo_is_trash_directory                 (GFile *dir);
 gboolean nemo_is_home_directory_file             (GFile *dir,
 						      const char *filename);
 gboolean nemo_is_in_system_dir                   (GFile *location);
