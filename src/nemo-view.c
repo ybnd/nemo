@@ -96,13 +96,13 @@
 #include <libnemo-private/nemo-debug.h>
 
 /* Minimum starting update inverval */
-#define UPDATE_INTERVAL_MIN 50
+#define UPDATE_INTERVAL_MIN 200
 /* Maximum update interval */
-#define UPDATE_INTERVAL_MAX 2050
+#define UPDATE_INTERVAL_MAX 2000
 /* Amount of miliseconds the update interval is increased */
 #define UPDATE_INTERVAL_INC 250
 /* Interval at which the update interval is increased */
-#define UPDATE_INTERVAL_TIMEOUT_INTERVAL 250
+#define UPDATE_INTERVAL_TIMEOUT_INTERVAL 500
 /* Milliseconds that have to pass without a change to reset the update interval */
 #define UPDATE_INTERVAL_RESET 1000
 
@@ -111,7 +111,7 @@
 #define DUPLICATE_HORIZONTAL_ICON_OFFSET 70
 #define DUPLICATE_VERTICAL_ICON_OFFSET   30
 
-#define MAX_QUEUED_UPDATES 500
+#define MAX_QUEUED_UPDATES 250
 
 #define NEMO_VIEW_MENU_PATH_OPEN_PLACEHOLDER                  "/MenuBar/File/Open Placeholder"
 #define NEMO_VIEW_MENU_PATH_APPLICATIONS_SUBMENU_PLACEHOLDER  "/MenuBar/File/Open Placeholder/Open With/Applications Placeholder"
@@ -5072,7 +5072,7 @@ setup_bookmark_action(      char *action_name,
                             action_name,
                             GTK_UI_MANAGER_MENUITEM,
                             FALSE);
-
+    g_object_unref (action);
     g_free (action_name);
 }
 
@@ -8551,11 +8551,11 @@ static const GtkActionEntry directory_view_entries[] = {
                 N_("Browse..."), NULL,
                 N_("Browse for a folder to copy the selection to"),
                 G_CALLBACK (action_browse_for_copy_to_folder_callback) },
-                               {NEMO_ACTION_PIN_FILE, "view-pin-symbolic",
+                               {NEMO_ACTION_PIN_FILE, "xapp-pin-symbolic",
                 N_("P_in"), "<control><shift>D",
                 N_("Pin the selected file so it always appears at the top of this location's file list"),
                 G_CALLBACK (action_pin_unpin_file_callback) },
-                               {NEMO_ACTION_UNPIN_FILE, "view-pin-symbolic",
+                               {NEMO_ACTION_UNPIN_FILE, "xapp-unpin-symbolic",
                 N_("Unp_in"), "<control><shift>D",
                 N_("Unpin the selected file from the top of this location's file list"),
                 G_CALLBACK (action_pin_unpin_file_callback) }

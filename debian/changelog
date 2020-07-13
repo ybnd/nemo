@@ -1,3 +1,132 @@
+nemo (4.6.4) ulyana; urgency=medium
+
+  [ Ԝеѕ ]
+  * display last modified date property on directories
+
+  [ Michael Webster ]
+  * nemo-places-sidebar.c: Fix regression with using the icon-name property in GtkCellRendererPixbuf.
+  * nemo-directory: Improve visual performance in smaller folders.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 21 Jun 2020 13:39:41 +0100
+
+nemo (4.6.3) ulyana; urgency=medium
+
+  [ Michael Webster ]
+  * icon view: Fix additional line calculation for labels, and tweak spacing between icons.
+  * nemo-icon-canvas-item.c: Only show full label text when an item is hovered over, but not if it is merely selected.
+  * nemo-file-management-properties.glade: Add the modal flag to the window and increase vertical size slightly.
+
+  [ Soapux ]
+  * meson: Remove a workaround for old meson versions
+
+  [ Fabio Fantoni ]
+  * use debhelper 11 for integrated meson support
+
+  [ Clement Lefebvre ]
+  * CI: Use explicit tags
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 06 Jun 2020 14:52:58 +0100
+
+nemo (4.6.2) ulyana; urgency=medium
+
+  [ Michael Webster ]
+  * nemo-bookmarks-window.c: Refactor to improve reliability.
+  * Defer extension-provided file attributes until the file is made visible in a view.
+  * nemo-progress-ui-handler.c: Use XAppStatusIcon.
+  * nemo-list-view.c: Cancel the visible files callback when the view is cleared or destroyed.
+  * nemo-file.c: Only show the 'icon loading' icon when an icon is actually loading.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 27 May 2020 12:34:09 +0100
+
+nemo (4.6.1) ulyana; urgency=medium
+
+  [ Michael Webster ]
+  * nemo-file.c: Fix refresh removing existing thumbnails.
+  * Fix new build warnings.
+  * i18n: Localize the mimetype definitions.
+  * debian/control: Add itstool build dependency.
+  * nemo-icon-container.c: Set a transient parent on the interactive search popup.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * all: Fix some memory leaks
+  * icon view: Use a fixed vertical spacing in the normal icon view.
+  * nemo-thumbnails.c: Use the default idle priority for starting the thumbnail thread.
+  * thumbnails: generate/load thumbnails on visible items only, and drop background loading.
+
+  [ Clement Lefebvre ]
+  * CI: Target Mint 20 and LMDE 4
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 21 May 2020 11:19:42 +0100
+
+nemo (4.6.0) ulyana; urgency=medium
+
+  [ Michael Webster ]
+  * nemo-window.c: Monitor and react to scale-factor changes.
+  * nemo-icon-container.c: clear any existing drag info when the icon view's location changes.
+
+  [ Leigh Scott ]
+  * nemo-file-operations.c: Copy file and keep timestamps of original file including remotes
+
+  [ Michael Webster ]
+  * control: Remove python2 dependencies
+
+  [ leigh123linux ]
+  * nemo-global-preferences: use 'extern' properly
+
+  [ Michael Webster ]
+  * meson.build: Don't be confusing when pango 1.44.0 isn't found.
+
+  [ worldofpeace ]
+  * build: use define_variable for typelib directory
+
+  [ Michael Webster ]
+  * Fix mistake in --help output.
+
+  [ Daniel Clarke ]
+  * Fallback to uri when path is null in title
+
+  [ Luke Scott ]
+  * Sort nemo actions menu alphabetically
+
+  [ J. Luke Scott [thinkpad] ]
+  * linter fix for previous
+
+  [ sidorsett ]
+  * Update nemo-view.c
+
+  [ JosephMcc ]
+  * nemo-notebook: Add a minimum width for the tab labels
+
+  [ Kamil Chojnowski ]
+  * Add %e action token
+
+  [ Michael Webster ]
+  * nemo-global-preferences.c: Fix base-2-full size format display.
+
+  [ Timothy Arceri ]
+  * Remove .hidden file code now that gio does if for us
+
+  [ NikoKrause ]
+  * nemo action: use different icons for pin/unpin
+
+  [ Michael Webster ]
+  * nemo-tree-sidebar.c: Allow using separate icons for pin and unpin, and use the new xapp icons from the previous commit.
+
+  [ JosephMcc ]
+  * settings: Set the default width of the sidebar to 170
+
+  [ Ján Jančár ]
+  * Add tracker support (#2334)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+  * l10n: Generate files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 13 May 2020 14:00:42 +0100
+
 nemo (4.4.2) tricia; urgency=medium
 
   [ leigh123linux ]

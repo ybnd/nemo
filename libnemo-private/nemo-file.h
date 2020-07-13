@@ -105,6 +105,12 @@ typedef enum {
     NEMO_FILE_TOOLTIP_FLAGS_CREATED_DATE = (1<<4)
 } NemoFileTooltipFlags;
 
+typedef enum {
+    NEMO_FILE_LOAD_DEFERRED_ATTRS_NO,
+    NEMO_FILE_LOAD_DEFERRED_ATTRS_YES,
+    NEMO_FILE_LOAD_DEFERRED_ATTRS_PRELOAD
+} NemoFileLoadDeferredAttrs;
+
 /* Emblems sometimes displayed for NemoFiles. Do not localize. */ 
 #define NEMO_FILE_EMBLEM_NAME_SYMBOLIC_LINK "symbolic-link"
 #define NEMO_FILE_EMBLEM_NAME_CANT_READ "noread"
@@ -130,8 +136,8 @@ typedef char * (*NemoTruncateCallback)    (const char    *string,
 					       int	      width,
 					       void	     *context);
 
-
 #define NEMO_FILE_ATTRIBUTES_FOR_ICON (NEMO_FILE_ATTRIBUTE_INFO | NEMO_FILE_ATTRIBUTE_LINK_INFO | NEMO_FILE_ATTRIBUTE_THUMBNAIL)
+#define NEMO_FILE_DEFERRED_ATTRIBUTES (NEMO_FILE_ATTRIBUTE_THUMBNAIL | NEMO_FILE_ATTRIBUTE_EXTENSION_INFO)
 
 typedef void NemoFileListHandle;
 
@@ -189,6 +195,7 @@ const char *            nemo_file_peek_name                         (NemoFile   
 GFile *                 nemo_file_get_location                      (NemoFile                   *file);
 char *			 nemo_file_get_description			 (NemoFile			 *file);
 char *                  nemo_file_get_uri                           (NemoFile                   *file);
+const char *            nemo_file_peek_uri                          (NemoFile                   *file);
 char *                  nemo_file_get_path                          (NemoFile                   *file);
 char *                  nemo_file_get_uri_scheme                    (NemoFile                   *file);
 NemoFile *          nemo_file_get_parent                        (NemoFile                   *file);
@@ -240,6 +247,7 @@ NemoRequestStatus   nemo_file_get_deep_counts                   (NemoFile       
 									 gboolean                        force);
 gboolean                nemo_file_should_show_thumbnail             (NemoFile                   *file);
 void                    nemo_file_delete_thumbnail                  (NemoFile                   *file);
+gboolean                nemo_file_has_loaded_thumbnail              (NemoFile                   *file);
 gboolean                nemo_file_should_show_directory_item_count  (NemoFile                   *file);
 gboolean                nemo_file_should_show_type                  (NemoFile                   *file);
 GList *                 nemo_file_get_keywords                      (NemoFile                   *file);
@@ -521,7 +529,9 @@ void     nemo_file_set_is_desktop_orphan          (NemoFile *file, gboolean is_d
 
 gboolean nemo_file_get_pinning                    (NemoFile *file);
 void     nemo_file_set_pinning                    (NemoFile *file, gboolean  pin);
-
+void     nemo_file_set_load_deferred_attrs        (NemoFile *file,
+                                                   NemoFileLoadDeferredAttrs load_deferred_attrs);
+NemoFileLoadDeferredAttrs nemo_file_get_load_deferred_attrs (NemoFile *file);
 /* Debugging */
 void                    nemo_file_dump                              (NemoFile                   *file);
 

@@ -1,10 +1,13 @@
 
+nemo_i18n_header = [
+  'nemo-extension-i18n.h'
+]
+
 nemo_extension_sources = [
   gresources,
   'nemo-column-provider.c',
   'nemo-column.c',
   'nemo-desktop-preferences.c',
-  'nemo-extension-i18n.h',
   'nemo-extension-private.h',
   'nemo-file-info.c',
   'nemo-info-provider.c',
@@ -40,7 +43,7 @@ nemo_extension_incdir = include_directories('.')
 nemo_extension_deps = [ glib, gtk ]
 
 nemo_extension_lib = shared_library('nemo-extension',
-  nemo_extension_sources,
+  nemo_extension_sources + nemo_i18n_header,
   dependencies: nemo_extension_deps,
   include_directories: [ rootInclude, ],
   install: true,
@@ -70,28 +73,13 @@ gnome.generate_gir(nemo_extension_lib,
   install: true,
 )
 
-if meson.version().version_compare('>=0.41.0')
-  pkgconfig.generate(filebase: 'libnemo-extension',
-    name: 'libnemo-extension',
-    description: 'A library to create Nemo view extensions',
-    version: meson.project_version(),
-    requires: [ 'gio-2.0', 'glib-2.0', 'gtk+-3.0' ],
-    libraries: nemo_extension_lib,
-    subdirs: 'nemo',
-    variables: 'extensiondir=${libdir}/@0@/@1@'.format('nemo', 'extensions-3.0'),
-  )
-else
-  pc_conf = configuration_data()
-  pc_conf.set('prefix', get_option('prefix'))
-  pc_conf.set('libdir', get_option('libdir'))
-  pc_conf.set('includedir', get_option('includedir'))
-  pc_conf.set('version', meson.project_version())
-  pc_conf.set('extensiondir', nemoExtensionPath)
-  configure_file(
-    input : 'libnemo-extension.pc.in',
-    output: 'libnemo-extension.pc',
-    configuration: pc_conf,
-    install: true,
-    install_dir: join_paths(get_option('libdir'), 'pkgconfig'),
- )
-endif
+pkgconfig.generate(filebase: 'libnemo-extension',
+  name: 'libnemo-extension',
+  description: 'A library to create Nemo view extensions',
+  version: meson.project_version(),
+  requires: [ 'gio-2.0', 'glib-2.0', 'gtk+-3.0' ],
+  libraries: nemo_extension_lib,
+  subdirs: 'nemo',
+  variables: 'extensiondir=${libdir}/@0@/@1@'.format('nemo', 'extensions-3.0'),
+)
+

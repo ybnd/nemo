@@ -188,6 +188,7 @@ nemo_file_init (NemoFile *file)
     file->details->cached_position_x = -1;
     file->details->cached_position_y = -1;
     file->details->pinning = FILE_PINNING_UNKNOWN;
+    file->details->load_deferred_attrs = NEMO_FILE_LOAD_DEFERRED_ATTRS_NO;
 
 	nemo_file_clear_info (file);
 	nemo_file_invalidate_extension_info_internal (file);
@@ -501,6 +502,7 @@ nemo_file_clear_info (NemoFile *file)
 	file->details->ctime = 0;
     file->details->btime = 0;
 	file->details->trash_time = 0;
+    file->details->load_deferred_attrs = NEMO_FILE_LOAD_DEFERRED_ATTRS_NO;
 	g_free (file->details->symlink_name);
 	file->details->symlink_name = NULL;
 	eel_ref_str_unref (file->details->mime_type);
@@ -564,7 +566,7 @@ nemo_file_new_from_filename (NemoDirectory *directory,
 	file->details->name = eel_ref_str_new (filename);
 
 #ifdef NEMO_FILE_DEBUG_REF
-	DEBUG_REF_PRINTF("%10p ref'd", file);
+	DEBUG_REF_PRINTF("%10p ref'd\n", file);
 #endif
 
 	return file;
@@ -676,7 +678,7 @@ nemo_file_new_from_info (NemoDirectory *directory,
 	update_info_and_name (file, info);
 
 #ifdef NEMO_FILE_DEBUG_REF
-	DEBUG_REF_PRINTF("%10p ref'd", file);
+	DEBUG_REF_PRINTF("%10p ref'd\n", file);
 #endif
 
 	return file;
@@ -865,6 +867,8 @@ finalize (GObject *object)
 		metadata_hash_free (file->details->metadata);
 	}
 
+    g_free (file->details->cached_uri);
+
 	G_OBJECT_CLASS (nemo_file_parent_class)->finalize (object);
 }
 
@@ -877,7 +881,7 @@ nemo_file_ref (NemoFile *file)
 	g_return_val_if_fail (NEMO_IS_FILE (file), NULL);
 
 #ifdef NEMO_FILE_DEBUG_REF
-	DEBUG_REF_PRINTF("%10p ref'd", file);
+	DEBUG_REF_PRINTF("%10p ref'd\n", file);
 #endif
 
 	return g_object_ref (file);
@@ -893,7 +897,7 @@ nemo_file_unref (NemoFile *file)
 	g_return_if_fail (NEMO_IS_FILE (file));
 
 #ifdef NEMO_FILE_DEBUG_REF
-	DEBUG_REF_PRINTF("%10p unref'd", file);
+	DEBUG_REF_PRINTF("%10p unref'd\n", file);
 #endif
 
 	g_object_unref (file);
@@ -1637,6 +1641,18 @@ nemo_file_get_uri (NemoFile *file)
 	g_object_unref (loc);
 
 	return uri;
+}
+
+const char *
+nemo_file_peek_uri (NemoFile *file)
+{
+    g_return_val_if_fail (NEMO_IS_FILE (file), NULL);
+
+    if (file->details->cached_uri == NULL) {
+        file->details->cached_uri = nemo_file_get_uri (file);
+    }
+
+    return file->details->cached_uri;
 }
 
 /* Return the actual path associated with the passed-in file. */
@@ -3491,15 +3507,6 @@ nemo_file_is_hidden_file (NemoFile *file)
 	return file->details->is_hidden;
 }
 
-static gboolean
-is_file_hidden (NemoFile *file)
-{
-	return file->details->directory->details->hidden_file_hash != NULL &&
-		g_hash_table_lookup (file->details->directory->details->hidden_file_hash,
-				     eel_ref_str_peek (file->details->name)) != NULL;
-
-}
-
 /**
  * nemo_file_should_show:
  * @file: the file to check.
@@ -3519,7 +3526,7 @@ nemo_file_should_show (NemoFile *file,
 	if (nemo_file_is_in_trash (file)) {
 		return TRUE;
 	} else {
-		return (show_hidden || (!nemo_file_is_hidden_file (file) && !is_file_hidden (file))) &&
+		return (show_hidden || !nemo_file_is_hidden_file (file)) &&
 			(show_foreign || !(nemo_file_is_in_desktop (file) && nemo_file_is_foreign_link (file)));
 	}
 }
@@ -4339,7 +4346,9 @@ nemo_file_delete_thumbnail (NemoFile *file)
 
     gint success;
 
-    invalidate_thumbnail (file);
+    nemo_file_invalidate_attributes (file, NEMO_FILE_ATTRIBUTE_THUMBNAIL);
+    g_clear_object (&file->details->thumbnail);
+
     success = g_unlink (file->details->thumbnail_path);
 
     if (success != 0) {
@@ -4347,6 +4356,12 @@ nemo_file_delete_thumbnail (NemoFile *file)
                    file->details->display_name,
                    file->details->thumbnail_path);
     }
+}
+
+gboolean
+nemo_file_has_loaded_thumbnail (NemoFile *file)
+{
+    return file->details->thumbnail_is_up_to_date;
 }
 
 static void
@@ -4643,7 +4658,7 @@ nemo_file_get_icon (NemoFile *file,
 	DEBUG ("Called file_get_icon(), at size %d, force thumbnail %d", size,
 	       flags & NEMO_FILE_ICON_FLAGS_FORCE_THUMBNAIL_SIZE);
 
-	if (flags & NEMO_FILE_ICON_FLAGS_USE_THUMBNAILS &&
+	if ((flags & NEMO_FILE_ICON_FLAGS_USE_THUMBNAILS) &&
 	    nemo_file_should_show_thumbnail (file)) {
 
         if (flags & NEMO_FILE_ICON_FLAGS_FORCE_THUMBNAIL_SIZE) {
@@ -4734,12 +4749,12 @@ nemo_file_get_icon (NemoFile *file,
 			   !file->details->is_thumbnailing &&
 			   !file->details->thumbnailing_failed) {
 			if (nemo_can_thumbnail (file)) {
-				nemo_create_thumbnail (file, get_throttle_count (file));
+				nemo_create_thumbnail (file, get_throttle_count (file), TRUE);
 			}
 		}
 	}
 
-	if (file->details->is_thumbnailing &&
+    if (file->details->is_thumbnailing &&
 	    flags & NEMO_FILE_ICON_FLAGS_USE_THUMBNAILS)
 		gicon = g_themed_icon_new (ICON_NAME_THUMBNAIL_LOADING);
 	else
@@ -6310,10 +6325,8 @@ nemo_file_get_size_as_string_with_real_size (NemoFile *file)
 		return NULL;
 	}
 
-	/* If base-2 or base-2-full, then prefix will be 2 (i.e. base-2), if base-10 or base-10-long
-	   then prefix will be 0 (i.e. base-0). Prefix will be added to LONG_FORMAT */
-	prefix = nemo_global_preferences_get_size_prefix_preference () * 2;
-	return g_format_size_full (file->details->size, G_FORMAT_SIZE_LONG_FORMAT + prefix);
+	prefix = nemo_global_preferences_get_size_prefix_preference ();
+	return g_format_size_full (file->details->size, prefix);
 }
 
 
@@ -8026,6 +8039,19 @@ nemo_file_invalidate_extension_info_internal (NemoFile *file)
 
 	file->details->pending_info_providers =
 		nemo_module_get_extensions_for_type (NEMO_TYPE_INFO_PROVIDER);
+}
+
+void
+nemo_file_set_load_deferred_attrs (NemoFile                  *file,
+                                   NemoFileLoadDeferredAttrs  load_deferred)
+{
+    file->details->load_deferred_attrs = load_deferred;
+}
+
+NemoFileLoadDeferredAttrs
+nemo_file_get_load_deferred_attrs (NemoFile *file)
+{
+    return file->details->load_deferred_attrs;
 }
 
 void
