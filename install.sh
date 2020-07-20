@@ -10,6 +10,10 @@ while getopts 'y' opt; do
     esac
 done
 
+# Check out personal branch & merge origin/master
+git checkout personal
+git merge origin/master
+
 makepkg -f
 ls -t nemo-ybnd-personal* | head -1 | xargs -I $ sudo pacman -U --noconfirm $
 sudo rm -r nemo
